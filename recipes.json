@@ -1,0 +1,16 @@
+[{
+        "name": "Свинина с яблоками",
+        "eating": ["breakfast", "launch"],
+        "temperature": "hot",
+        "ingredients": ["яблоки", "свинина"],
+        "vegaterian": false,
+        "recipe": "Порезать, запихуть в духовку"
+    }, {
+        "name": "Греческий салат",
+        "eating": "dinner - выбрать, список или одна строка",
+        "temperature": "cold",
+        "ingredients": ["огурцы", "помидоры", "оливки"],
+        "vegaterian": true,
+        "recipe": "Порезать, смешать."
+    }
+]
