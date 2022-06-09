@@ -9,7 +9,7 @@
         "name": "Греческий салат",
         "eating": ["Ужины"],
         "temperature": "cold",
-        "ingredients": ["огурцы", "помидоры", "оливки"],
+        "ingredients": ["Огурцы", "помидоры", "оливки"],
         "vegaterian": true,
         "recipe": "Порезать, смешать."
     }, {

@@ -14,12 +14,16 @@ f = open('Ужины.json', 'r', encoding='UTF-8')
 recipe_3 = json.load(f)
 f.close()
 
+def json_recipe_to_str(r):
+    return f'*Блюдо:* {r["name"]}.\n*Состав:* {", ".join(r["ingredients"])}.\n*Алгоритм Приготовления:* {r["recipe"]}'.replace(".", "\.")
+
 @bot.message_handler(commands=["start"])
 def start(m, res=False):
     markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1=types.KeyboardButton("Рецепт")	
     markup.add(item1)
     bot.send_message(m.chat.id, 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
+
 
 @bot.message_handler(content_types=["text"])
 def handle_text(message):
@@ -33,13 +37,14 @@ def handle_text(message):
         markup.add(item4)
         bot.send_message(message.chat.id, 'Нажми: \nНа какой прием пищи вы хотите получить рецепт ',  reply_markup=markup)
     if  message.text.strip() == 'Завтраки' :
-        answer = str(random.choice(recipe_1))
-        bot.send_message(message.chat.id, answer)
+        answer = json_recipe_to_str(random.choice(recipe_1))
+        bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
     elif message.text.strip() == 'Обеды' :
-        answer = str(random.choice(recipe_2))
-        bot.send_message(message.chat.id, answer)
+        answer = json_recipe_to_str(random.choice(recipe_2))
+        bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
     elif message.text.strip() == 'Ужины':
-        answer = str(random.choice(recipe_3))
-        bot.send_message(message.chat.id, answer)
+        answer = json_recipe_to_str(random.choice(recipe_3))
+        bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
+
 
 bot.polling(none_stop=True, interval=0)
