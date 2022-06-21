@@ -4,16 +4,21 @@ import random
 import json
 token="5371708856:AAFjSjtyderlCBeg05W2K1FKXNAVLEQaDKg"
 bot=telebot.TeleBot(token)
-f = open('Завтраки.json', 'r', encoding='UTF-8')
-recipe_1 = json.load(f)
+f = open('recipes.json', 'r', encoding='UTF-8')
+recipes = json.load(f)
 f.close()
-f = open('Обеды.json', 'r', encoding='UTF-8')
-recipe_2 = json.load(f)
-f.close()
-f = open('Ужины.json', 'r', encoding='UTF-8')
-recipe_3 = json.load(f)
-f.close()
-
+breakfast = []
+lunch = []
+dinner = []
+for i in range(len(recipes)):
+    if "Завтраки" in recipes[i]["eating"]:
+        breakfast.append(recipes[i])
+    if "Обеды" in recipes[i]["eating"]:
+        lunch.append(recipes[i])
+    if "Ужины" in recipes[i]["eating"]:
+        dinner.append(recipes[i])
+        
+                
 def json_recipe_to_str(r):
     return f'*Блюдо:* {r["name"]}.\n*Состав:* {", ".join(r["ingredients"])}.\n*Алгоритм Приготовления:* {r["recipe"]}'.replace(".", "\.")
 
@@ -36,14 +41,15 @@ def handle_text(message):
         markup.add(item3)
         markup.add(item4)
         bot.send_message(message.chat.id, 'Нажми: \nНа какой прием пищи вы хотите получить рецепт ',  reply_markup=markup)
+ 
     if  message.text.strip() == 'Завтраки' :
-        answer = json_recipe_to_str(random.choice(recipe_1))
+        answer = json_recipe_to_str(random.choice(breakfast))
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
     elif message.text.strip() == 'Обеды' :
-        answer = json_recipe_to_str(random.choice(recipe_2))
+        answer = json_recipe_to_str(random.choice(lunch))
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
     elif message.text.strip() == 'Ужины':
-        answer = json_recipe_to_str(random.choice(recipe_3))
+        answer = json_recipe_to_str(random.choice(dinner))
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2")
 
 
