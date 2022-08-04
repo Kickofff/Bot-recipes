@@ -34,33 +34,34 @@ def handle_text(message):
     global eat
     global state
     print(eat)
-    if message.text.strip() == 'Рецепт' and state.get(message.chat.id, 0) == 0:
+    text = message.text.strip()
+    
+    if text == 'Рецепт' and state.get(message.chat.id, 0) == 0:
         markup = get_markup(["Завтраки", "Обеды", "Ужины"])
         bot.send_message(message.chat.id, 'Нажми: \nНа какой прием пищи вы хотите получить рецепт? ',  reply_markup=markup)
         state[message.chat.id] = 1
         
-    elif message.text.strip() == 'Завтраки' or message.text.strip() == 'Обеды' or message.text.strip() == 'Ужины' and state[message.chat.id] == 1 :
+    elif text in ['Завтраки', 'Обеды', 'Ужины'] and state[message.chat.id] == 1 :
         markup = get_markup(["cold", "hot"])
-        eat[message.chat.id] = message.text.strip()
+        eat[message.chat.id] = text
         bot.send_message(message.chat.id, 'Нажми: \nКакой температуры вы бы хотели блюдо? ',  reply_markup=markup)
         state[message.chat.id] = 2
         
-    elif  message.text.strip() == 'cold' or message.text.strip() == 'hot'  and state[message.chat.id] == 2:
+    elif text in ['cold', 'hot'] and state[message.chat.id] == 2:
         markup = get_markup(["Vegan", "NotVegan"])
-        temp[message.chat.id] = message.text.strip()
+        temp[message.chat.id] = text
         bot.send_message(message.chat.id, 'Нажми: \nВы бы хотели вегетерианское блюдо или нет? ',  reply_markup=markup)
         state[message.chat.id] = 3
         
-    elif message.text.strip() == 'Vegan' or message.text.strip() == 'NotVegan' and state[message.chat.id] == 3:
+    elif text in ['Vegan', 'NotVegan'] and state[message.chat.id] == 3:
         markup = get_markup(["Рецепт"])
         L = []
         for i in range(len(recipes)):
-             if eat[message.chat.id] in recipes[i]["eating"] and  (message.text.strip() == "Vegan") == recipes[i]["vegaterian"] and temp[message.chat.id] in recipes[i]["temperature"]:
+             if eat[message.chat.id] in recipes[i]["eating"] and  (text == "Vegan") == recipes[i]["vegaterian"] and temp[message.chat.id] in recipes[i]["temperature"]:
                 L.append(recipes[i])
         answer = json_recipe_to_str(random.choice(L))
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2",  reply_markup=markup)
-        state[message.chat.id] = 0
-        
+        state[message.chat.id] = 0 
         
     else:
         print(state)
