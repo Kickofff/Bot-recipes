@@ -25,12 +25,7 @@ def get_markup(names):
 def start(m, res=False):
     global state
     markup = get_markup(["Рецепт"])
-    
-    #photo = bot.send_photo(m.chat.id, open("test_photo.png", "rb"), 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
-    
     photo = bot.send_photo(m.chat.id, "AgACAgIAAxkDAAIDqWMosr6BmAAB3FfTypauUlzGTepkKwACLL8xG6wxaEhG7i4VDcBVJwEAAwIAA3gAAykE", 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
-    print(dir(photo))
-    print(photo)
     state[m.chat.id] = 0
 
 
@@ -66,27 +61,25 @@ def handle_text(message):
         K = []
         J = []
         
-        if eat[message.chat.id] == ["Неважно"]:
+        if eat[message.chat.id] == "Неважно":
             L = recipes
         else:
             for i in range(len(recipes)):
                 if eat[message.chat.id] in recipes[i]["eating"]:
-                    L.append(recipes[i])
-                    
-        if temp[message.chat.id] == ["Неважно"]:
+                    L.append(recipes[i])           
+        if temp[message.chat.id] == "Неважно":
             K = L
         else:
             for i in range(len(L)):        
                 if temp[message.chat.id] in L[i]["temperature"]:
-                    K.append(L[i])
-                    
-        if (text == "Неважно") == ["Неважно"]:
+                    K.append(L[i])            
+        if text  == "Неважно":
             J = K
+
         else:
             for i in range(len(K)):        
                 if (text == "Vegan") == K[i]["vegaterian"]:
-                    J.append(K[i])
-                
+                    J.append(K[i])      
         if J == []:
             answer = "Блюдо с данными параметрами не найдено"
         else:
@@ -95,19 +88,11 @@ def handle_text(message):
             answer = json_recipe_to_str(Q)
                 
                 
-        #L = []
-        #for i in range(len(recipes)):
-             #if eat[message.chat.id] in recipes[i]["eating"] and  (text == "Vegan") == recipes[i]["vegaterian"] and temp[message.chat.id] in recipes[i]["temperature"]:
-                #L.append(recipes[i])
-        #if L == []:
-           # answer = "Блюдо с данными параметрами не найдено"
-        #else:
-            #answer = json_recipe_to_str(random.choice(L))
+
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2",  reply_markup=markup)
         state[message.chat.id] = 0 
         
     else:
-        print(state)
         bot.send_message(message.chat.id, 'Я тупой и не понимаю сложных слов, нажимайте кнопки пожалуйста. ')
         markup = get_markup(["Рецепт"])
         bot.send_message(message.chat.id, 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
