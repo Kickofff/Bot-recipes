@@ -28,7 +28,39 @@ def start(m, res=False):
     photo = bot.send_photo(m.chat.id, "AgACAgIAAxkDAAIDqWMosr6BmAAB3FfTypauUlzGTepkKwACLL8xG6wxaEhG7i4VDcBVJwEAAwIAA3gAAykE", 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
     state[m.chat.id] = 0
 
+def get_answer(eating, temperature, vegateriancy):
+    
+    L = []
+    K = []
+    J = []
+    
+    if eating == "Неважно":
+        L = recipes
+    else:
+        for i in range(len(recipes)):
+            if eating in recipes[i]["eating"]:
+                L.append(recipes[i])           
+    if temperature == "Неважно":
+        K = L
+    else:
+        for i in range(len(L)):        
+            if temperature in L[i]["temperature"]:
+                K.append(L[i])            
+    if vegateriancy  == "Неважно":
+        J = K
 
+    else:
+        for i in range(len(K)):        
+            if (vegateriancy == "Vegan") == K[i]["vegaterian"]:
+                J.append(K[i])      
+    if J == []:
+        answer = "Блюдо с данными параметрами не найдено"
+    else:
+        Q = random.choice(J)
+        answer = json_recipe_to_str(Q)
+    return answer    
+            
+            
 @bot.message_handler(content_types=["text"])
 def handle_text(message):
     global eat
@@ -56,39 +88,9 @@ def handle_text(message):
         
     elif text in ['Vegan', 'NotVegan', "Неважно"] and state[message.chat.id] == 3:
         markup = get_markup(["Рецепт"])
-        
-        L = []
-        K = []
-        J = []
-        
-        if eat[message.chat.id] == "Неважно":
-            L = recipes
-        else:
-            for i in range(len(recipes)):
-                if eat[message.chat.id] in recipes[i]["eating"]:
-                    L.append(recipes[i])           
-        if temp[message.chat.id] == "Неважно":
-            K = L
-        else:
-            for i in range(len(L)):        
-                if temp[message.chat.id] in L[i]["temperature"]:
-                    K.append(L[i])            
-        if text  == "Неважно":
-            J = K
 
-        else:
-            for i in range(len(K)):        
-                if (text == "Vegan") == K[i]["vegaterian"]:
-                    J.append(K[i])      
-        if J == []:
-            answer = "Блюдо с данными параметрами не найдено"
-        else:
-            Q = random.choice(J)
-            print(Q)
-            answer = json_recipe_to_str(Q)
-                
-                
-
+        answer = get_answer(eat[message.chat.id], temp[message.chat.id], text)
+        
         bot.send_message(message.chat.id, answer, parse_mode = "MarkdownV2",  reply_markup=markup)
         state[message.chat.id] = 0 
         
