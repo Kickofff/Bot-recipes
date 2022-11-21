@@ -2,11 +2,9 @@ import telebot
 from telebot import types
 import random
 import json
+import sqlite3
 token="5371708856:AAFjSjtyderlCBeg05W2K1FKXNAVLEQaDKg"
 bot=telebot.TeleBot(token)
-f = open('recipes.json', 'r', encoding='UTF-8')
-recipes = json.load(f)
-f.close()
 eat = {}  
 state = {}
 temp = {}
@@ -29,11 +27,29 @@ def start(m, res=False):
     state[m.chat.id] = 0
 
 def get_answer(eating, temperature, vegateriancy):
+    con = sqlite3.connect("New_recipes_base.db")
+    cur = con.cursor()
     
+    sql_template = """select * 
+                      from recipes 
+                      join recipes_eating on recipes_eating.id_recipe = recipes.id 
+                      where temperature = 'hot' 
+                            and vegan = false 
+                            and id_eating = 0 
+                      order by random() 
+                      limit 1 """
+    
+    res = cur.execute(sql_template)    
+    r = res.fetchone()
+    
+    print(r)
+    return str(r).replace("(", r"\(").replace(")", r"\)")
+    """
     L = []
     K = []
     J = []
     
+   
     if eating == "Неважно":
         L = recipes
     else:
@@ -58,6 +74,8 @@ def get_answer(eating, temperature, vegateriancy):
     else:
         Q = random.choice(J)
         answer = json_recipe_to_str(Q)
+    """
+    
     return answer    
             
             
