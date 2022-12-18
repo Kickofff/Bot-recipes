@@ -9,8 +9,29 @@ eat = {}
 state = {}
 temp = {}
 
-def json_recipe_to_str(r):
-    return f'*Блюдо:* {r["name"]}.\n*Состав:* {", ".join(r["ingredients"])}.\n*Алгоритм Приготовления:* {r["recipe"]}'.replace(".", "\.")
+def escape_chars(line):
+    return line.replace("(", r"\(").replace(")", r"\)").replace(".", r"\.").replace("-", r"\-")
+    
+def recipe_to_str(recipe, ingredients):
+    L = []
+    for i in range(len(ingredients)):
+        ingredient_trans = f'{ingredients[i][0]} - {ingredients[i][1]} {ingredients[i][2]}'
+        L.append(ingredient_trans)
+        
+ 
+    text = ";\n".join(L) + '.'
+    
+    
+    main_template = f'''{recipe[1]}
+        
+{text}
+
+{recipe[2]}'''
+    
+    
+    
+
+    return escape_chars(main_template)
     
 def get_markup(names):
     markup=types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -29,60 +50,74 @@ def start(m, res=False):
 def get_answer(eating, temperature, vegateriancy):
     con = sqlite3.connect("New_recipes_base.db")
     cur = con.cursor()
-    
-    sql_template = """select * 
+    if vegateriancy == 'Vegan':
+        veg = 'true'
+    elif vegateriancy == 'NotVegan':
+        veg = 'false'
+    elif vegateriancy == 'Неважно':
+        veg = 'recipes.vegan'
+    else:
+        raise ValueError('unexpected value of vegateriancy, possible values: "Vegan", "NotVegan". Received value - "{vegateriancy}"')
+        
+    if eating == 'Завтраки':
+        e = 0
+    elif eating == 'Обеды':
+        e = 1
+    elif eating == 'Ужины':
+        e = 2
+    elif eating == 'Неважно':
+        e = 'recipes_eating.id_eating'
+    else:
+        raise ValueError(f'unexpected value of eating, possible values: "Завтраки", "Обеды", "Ужины", "Неважно". Received value - "{eating}"')
+        
+    if temperature == 'hot':
+        temper = "'hot'"
+    elif temperature == 'cold':
+        temper = "'cold'"
+    elif temperature == 'Неважно':
+        temper = 'recipes.temperature'
+    else:
+        raise ValueError(f'unexpected value of temperature, possible values: "hot", "cold". Received value -"{temperature}"')
+        
+    #if temperature == 'Неважно' and eating == 'Неважно' and vegateriancy == 'Неважно':
+        
+        
+    sql_template1 = f"""select id_recipe, name, cooking 
                       from recipes 
                       join recipes_eating on recipes_eating.id_recipe = recipes.id 
-                      where temperature = 'hot' 
-                            and vegan = false 
-                            and id_eating = 0 
+                      where recipes.temperature = {temper}
+                            and recipes.vegan = {veg}
+                            and recipes_eating.id_eating = {e} 
                       order by random() 
                       limit 1 """
     
-    res = cur.execute(sql_template)    
-    r = res.fetchone()
+    print(sql_template1)
+    res = cur.execute(sql_template1)    
+    recipe = res.fetchone()
+    if recipe is None:
+        return escape_chars(f'Рецепта по заданным критериям нет. Received value - "{temperature}", "{eating}", "{vegateriancy}"')
     
-    print(r)
-    return str(r).replace("(", r"\(").replace(")", r"\)")
+    
+    sql_template2 = """ select i.name, ri.amount, u.name 
+                        from ingredients as i 
+                        join recipes_ingredients as ri on ri.id_ingredient = i.id 
+                        join unit as u on u.id = i.id_unit
+                        where id_recipe = {id_recipe};
     """
-    L = []
-    K = []
-    J = []
+    res = cur.execute(sql_template2.format(id_recipe = recipe[0]))    
+    ingredients = res.fetchall()
     
-   
-    if eating == "Неважно":
-        L = recipes
-    else:
-        for i in range(len(recipes)):
-            if eating in recipes[i]["eating"]:
-                L.append(recipes[i])           
-    if temperature == "Неважно":
-        K = L
-    else:
-        for i in range(len(L)):        
-            if temperature in L[i]["temperature"]:
-                K.append(L[i])            
-    if vegateriancy  == "Неважно":
-        J = K
+    #return str(r1).replace("(", r"\(").replace(")", r"\)").replace(".", r"\.") + str(r2).replace("(", r"\(").replace(")", r"\)").replace(".", r"\.")
+     
+    return recipe_to_str(recipe, ingredients)
+ 
 
-    else:
-        for i in range(len(K)):        
-            if (vegateriancy == "Vegan") == K[i]["vegaterian"]:
-                J.append(K[i])      
-    if J == []:
-        answer = "Блюдо с данными параметрами не найдено"
-    else:
-        Q = random.choice(J)
-        answer = json_recipe_to_str(Q)
-    """
-    
-    return answer    
-            
-            
+     
 @bot.message_handler(content_types=["text"])
 def handle_text(message):
     global eat
     global state
+    global temp
     text = message.text.strip()
     
     if text == 'Рецепт' and state.get(message.chat.id, 0) == 0:
