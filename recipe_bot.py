@@ -22,7 +22,7 @@ def recipe_to_str(recipe, ingredients):
     text = ";\n".join(L) + '.'
     
     
-    main_template = f'''{recipe[1]}
+    main_template = f'''**{recipe[1]}**
         
 {text}
 
@@ -43,7 +43,7 @@ def get_markup(names):
 @bot.message_handler(commands=["start"])
 def start(m, res=False):
     global state
-    markup = get_markup(["Рецепт"])
+    markup = get_markup(["Рецепт", "Добавить рецепт"])
     photo = bot.send_photo(m.chat.id, "AgACAgIAAxkDAAIDqWMosr6BmAAB3FfTypauUlzGTepkKwACLL8xG6wxaEhG7i4VDcBVJwEAAwIAA3gAAykE", 'Нажми: \nРецепт для получения рецепт ',  reply_markup=markup)
     state[m.chat.id] = 0
 
@@ -91,7 +91,6 @@ def get_answer(eating, temperature, vegateriancy):
                       order by random() 
                       limit 1 """
     
-    print(sql_template1)
     res = cur.execute(sql_template1)    
     recipe = res.fetchone()
     if recipe is None:
@@ -122,8 +121,13 @@ def handle_text(message):
     
     if text == 'Рецепт' and state.get(message.chat.id, 0) == 0:
         markup = get_markup(["Завтраки", "Обеды", "Ужины", "Неважно"])
-        bot.send_message(message.chat.id, 'Нажми: \nНа какой прием пищи вы хотите получить рецепт? ',  reply_markup=markup)
+        bot.send_message(message.chat.id, '<b> Нажми: \nНа какой прием пищи вы хотите получить рецепт? </b> ',  reply_markup=markup, parse_mode="HTML")
         state[message.chat.id] = 1
+        
+    elif text == 'Добавить рецепт' and state.get(message.chat.id, 100) == 100:
+        markup = get_markup(['Такой функции пока нет, вернуться назад'])
+        bot.send_message(message.chat.id, 'Перезапустите бота',  reply_markup=markup)
+        state[message.chat.id] = 101
         
     elif text in ['Завтраки', 'Обеды', 'Ужины', "Неважно"] and state[message.chat.id] == 1 :
         eat[message.chat.id] = text
